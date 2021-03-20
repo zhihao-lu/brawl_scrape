@@ -1,8 +1,4 @@
-from datetime import date, datetime, timedelta
-import brawlstats
-import gspread
-from dateutil.parser import parse
-from dateutil import tz
+
 
 from oauth2client.service_account import ServiceAccountCredentials
 
