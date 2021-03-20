@@ -8,7 +8,7 @@ client = brawlstats.Client(token, prevent_ratelimit=True)
 
 # get all battles in battle log
 battles_raw = client.get_battle_logs('J9C0CGJU')
-battles = list(filter(lambda x: "Ranked" in x.battle.type, battles_raw))
+battles = list(filter(lambda x: "type" in x.battle and "Ranked" in x.battle.type, battles_raw))
 all_games = defaultdict(list)
 ME = '#J9C0CGJU'
 
