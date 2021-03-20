@@ -4,6 +4,7 @@ import brawlstats
 import gspread
 from dateutil.parser import parse
 from dateutil import tz
+from oauth2client.service_account import ServiceAccountCredentials
 from collections import defaultdict
 
 token = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzUxMiIsImtpZCI6IjI4YTMxOGY3LTAwMDAtYTFlYi03ZmExLTJjNzQzM2M2Y2NhNSJ9.eyJpc3MiOiJzdXBlcmNlbGwiLCJhdWQiOiJzdXBlcmNlbGw6Z2FtZWFwaSIsImp0aSI6IjYxNjk3Njk4LWRmOTQtNDZjMy05NmMzLTQ2MWZjMWY3NGI4OCIsImlhdCI6MTYxNDQ5MzQ5NCwic3ViIjoiZGV2ZWxvcGVyL2FhNGVlZDUxLWMwOTgtZTU5Yi02ODUyLTMxYjUyOWZjNWQ4OSIsInNjb3BlcyI6WyJicmF3bHN0YXJzIl0sImxpbWl0cyI6W3sidGllciI6ImRldmVsb3Blci9zaWx2ZXIiLCJ0eXBlIjoidGhyb3R0bGluZyJ9LHsiY2lkcnMiOlsiMTM3LjEzMi4yMTkuNDciLCIxMTYuODguODAuMjIwIl0sInR5cGUiOiJjbGllbnQifV19.q4kxrpwh2lZM65NqZcMWWSjdNSU5ZkoyLnQMIAK69Q7EKQHpkoY9S25vDp0PMweJMlIwvwnKl0dLTmLYRwZWaA"
@@ -73,4 +74,11 @@ def create_write_list(pl_games, counter):
              'https://www.googleapis.com/auth/drive']
     creds = ServiceAccountCredentials.from_json_keyfile_name('client_secret.json', scope)
     client = gspread.authorize(creds)
-    sheet = client.open(file_name).sheet_name'''
+    sheet = client.open(file_name).worksheet(sheet_name)
+    start_row = len(sheet.col_values(3)) + 1
+    counter = sheet.cell(start_row-1, 1).value
+    write = create_write_list(pl_games, counter)
+    for idx, row in enumerate(write):
+    # split create_write into chunks and update one chunk at a time
+    # filter by time
+        '''
