@@ -7,17 +7,17 @@ from dateutil import tz
 from oauth2client.service_account import ServiceAccountCredentials
 from collections import defaultdict
 
-token = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzUxMiIsImtpZCI6IjI4YTMxOGY3LTAwMDAtYTFlYi03ZmExLTJjNzQzM2M2Y2NhNSJ9.eyJpc3MiOiJzdXBlcmNlbGwiLCJhdWQiOiJzdXBlcmNlbGw6Z2FtZWFwaSIsImp0aSI6IjYxNjk3Njk4LWRmOTQtNDZjMy05NmMzLTQ2MWZjMWY3NGI4OCIsImlhdCI6MTYxNDQ5MzQ5NCwic3ViIjoiZGV2ZWxvcGVyL2FhNGVlZDUxLWMwOTgtZTU5Yi02ODUyLTMxYjUyOWZjNWQ4OSIsInNjb3BlcyI6WyJicmF3bHN0YXJzIl0sImxpbWl0cyI6W3sidGllciI6ImRldmVsb3Blci9zaWx2ZXIiLCJ0eXBlIjoidGhyb3R0bGluZyJ9LHsiY2lkcnMiOlsiMTM3LjEzMi4yMTkuNDciLCIxMTYuODguODAuMjIwIl0sInR5cGUiOiJjbGllbnQifV19.q4kxrpwh2lZM65NqZcMWWSjdNSU5ZkoyLnQMIAK69Q7EKQHpkoY9S25vDp0PMweJMlIwvwnKl0dLTmLYRwZWaA"
+token = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzUxMiIsImtpZCI6IjI4YTMxOGY3LTAwMDAtYTFlYi03ZmExLTJjNzQzM2M2Y2NhNSJ9.eyJpc3MiOiJzdXBlcmNlbGwiLCJhdWQiOiJzdXBlcmNlbGw6Z2FtZWFwaSIsImp0aSI6ImIxZWM2MDA3LTE2MGItNGRhZC1hZjE5LTE0MTUxYzA5YjAzMSIsImlhdCI6MTYxNjMzMTU0MSwic3ViIjoiZGV2ZWxvcGVyL2FhNGVlZDUxLWMwOTgtZTU5Yi02ODUyLTMxYjUyOWZjNWQ4OSIsInNjb3BlcyI6WyJicmF3bHN0YXJzIl0sImxpbWl0cyI6W3sidGllciI6ImRldmVsb3Blci9zaWx2ZXIiLCJ0eXBlIjoidGhyb3R0bGluZyJ9LHsiY2lkcnMiOlsiMTM3LjEzMi4yMTMuNDIiXSwidHlwZSI6ImNsaWVudCJ9XX0.2RX8nxAyN8Z5-HyE9daLtD3J-BByq44Z86mWMZR3TxpPyPmcTEdvAzDszewqikV_vKEXMUd2PMeA5U8_KtpDRw"
 client = brawlstats.Client(token, prevent_ratelimit=True)
 
 gamer_tag = "J9C0CGJU"
 
 
-def get_pl_games(gamer_tag):
+def get_pl_games(gamer_tag: str, last_time: str) -> defaultdict[Tuple, List]:
     # get all battles in battle log
     battles_raw = client.get_battle_logs(gamer_tag)
     battles = list(filter(lambda x: "type" in x.battle and "Ranked" in x.battle.type, battles_raw))
-    pl_games = defaultdict(list)
+    pl_games: defaultdict[Tuple, List] = defaultdict(list)
 
     def extract_player_tags(battle):
         out: List[str] = []
@@ -27,8 +27,9 @@ def get_pl_games(gamer_tag):
         return tuple(out)
 
     for battle in battles:
-        tags = extract_player_tags(battle)
-        pl_games[tags].append(battle)
+        if parse(battle.battle_time) > parse(last_time):
+            tags = extract_player_tags(battle)
+            pl_games[tags].append(battle)
     return pl_games
 
 
@@ -77,6 +78,8 @@ def create_write_list(pl_games, counter):
     sheet = client.open(file_name).worksheet(sheet_name)
     start_row = len(sheet.col_values(3)) + 1
     counter = sheet.cell(start_row-1, 1).value
+    last_time = sheet.cell(start_row-1, 2).value
+    pl_games = get_pl_games(gamer_tag, last_time)
     write = create_write_list(pl_games, counter)
     for idx, row in enumerate(write):
     # split create_write into chunks and update one chunk at a time
