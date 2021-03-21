@@ -65,6 +65,7 @@ def create_write_list(pl_games: defaultdict[Tuple, List], counter: int) -> List[
             row_write.extend(friends)
             row_write.extend(enemies)
             row_write.append(match.battle.result)
+            row_write.append(match.battle.type)
             write.append(row_write)
     return write
 
