@@ -82,6 +82,7 @@ def write_to_gsheets(sheet_name, workbook_name):
     last_time = sheet.cell(start_row - 1, 2).value
     pl_games = get_pl_games(gamer_tag, last_time)
     write = create_write_list(pl_games, counter)
+    write.reverse()
     def split_into_chunks(lst: List[List[str]], n: int) -> list[list[list[str]]]:
         return [lst[i:i + n] for i in range(0, len(lst), n)]
 
