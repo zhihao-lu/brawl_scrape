@@ -4,6 +4,7 @@ import brawlstats
 import gspread
 from dateutil.parser import parse
 from dateutil import tz
+from time import sleep
 from oauth2client.service_account import ServiceAccountCredentials
 from collections import defaultdict
 
@@ -56,7 +57,7 @@ def get_teams(game: object) -> Tuple[List[str], List[str]]:
     return friends_lst, enemies_lst
 
 
-def create_write_list(pl_games, counter):
+def create_write_list(pl_games: defaultdict[Tuple, List], counter: int) -> List[List[str]]:
     write = []
     for tags, game in pl_games.items():
         counter += 1
@@ -70,18 +71,28 @@ def create_write_list(pl_games, counter):
     return write
 
 # game_counter += 1
-'''def write_to_gsheets(pl_games, file_name, sheet_name):
+def write_to_gsheets(pl_games, sheet_name, workbook_name):
     scope = ['https://spreadsheets.google.com/feeds',
              'https://www.googleapis.com/auth/drive']
     creds = ServiceAccountCredentials.from_json_keyfile_name('client_secret.json', scope)
     client = gspread.authorize(creds)
-    sheet = client.open(file_name).worksheet(sheet_name)
+    sheet = client.open(sheet_name).worksheet(workbook_name)
     start_row = len(sheet.col_values(3)) + 1
     counter = sheet.cell(start_row-1, 1).value
     last_time = sheet.cell(start_row-1, 2).value
     pl_games = get_pl_games(gamer_tag, last_time)
     write = create_write_list(pl_games, counter)
-    for idx, row in enumerate(write):
-    # split create_write into chunks and update one chunk at a time
-    # filter by time
-        '''
+    
+    def split_into_chunks(lst: List[List[str]], n: int) -> list[list[list[str]]]:
+        return [lst[i:i + n] for i in range(0, len(lst), n)]
+
+    write = split_into_chunks(write, 5)
+
+    for chunk in write:
+        for row in chunk:
+            update_range = "A" + str(start_row) +":Q" + str(start_row)
+            start_row += 1
+            sheet.update(update_range, row)
+        sleep(100)
+
+
