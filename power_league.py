@@ -1,9 +1,7 @@
-from typing import List, Any, Dict, Tuple
-from datetime import date, datetime, timedelta
+from typing import List, Dict, Tuple
 import brawlstats
 import gspread
 from dateutil.parser import parse
-from dateutil import tz
 from time import sleep
 from oauth2client.service_account import ServiceAccountCredentials
 from collections import defaultdict
@@ -39,7 +37,7 @@ def get_pl_games(gamer_tag: str, last_time: str) -> defaultdict[Tuple, List]:
 
 # game_counter = get next number to count
 
-def get_teams(game: object) -> Tuple[List[str], List[str]]:
+def get_teams(game: list) -> Tuple[List[str], List[str]]:
     friends_lst, enemies_lst = [], []
     match = game[0]
     for battle in match.battle.teams:
@@ -70,19 +68,20 @@ def create_write_list(pl_games: defaultdict[Tuple, List], counter: int) -> List[
             write.append(row_write)
     return write
 
+
 # game_counter += 1
-def write_to_gsheets(pl_games, sheet_name, workbook_name):
+def write_to_gsheets(sheet_name, workbook_name):
     scope = ['https://spreadsheets.google.com/feeds',
              'https://www.googleapis.com/auth/drive']
     creds = ServiceAccountCredentials.from_json_keyfile_name('client_secret.json', scope)
     client = gspread.authorize(creds)
     sheet = client.open(sheet_name).worksheet(workbook_name)
-    start_row = len(sheet.col_values(3)) + 1
-    counter = sheet.cell(start_row-1, 1).value
-    last_time = sheet.cell(start_row-1, 2).value
+    start_row = len(sheet.col_values(1)) + 1
+    counter = sheet.cell(start_row - 1, 1).value
+    counter = int(counter)
+    last_time = sheet.cell(start_row - 1, 2).value
     pl_games = get_pl_games(gamer_tag, last_time)
     write = create_write_list(pl_games, counter)
-    
     def split_into_chunks(lst: List[List[str]], n: int) -> list[list[list[str]]]:
         return [lst[i:i + n] for i in range(0, len(lst), n)]
 
@@ -90,9 +89,7 @@ def write_to_gsheets(pl_games, sheet_name, workbook_name):
 
     for chunk in write:
         for row in chunk:
-            update_range = "A" + str(start_row) +":Q" + str(start_row)
+            # update_range = "A" + str(start_row) + ":Q" + str(start_row)
+            sheet.insert_row(row, start_row)
             start_row += 1
-            sheet.update(update_range, row)
         sleep(100)
-
-
