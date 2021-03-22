@@ -6,11 +6,10 @@ from time import sleep
 from oauth2client.service_account import ServiceAccountCredentials
 from collections import defaultdict
 
-token = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzUxMiIsImtpZCI6IjI4YTMxOGY3LTAwMDAtYTFlYi03ZmExLTJjNzQzM2M2Y2NhNSJ9.eyJpc3MiOiJzdXBlcmNlbGwiLCJhdWQiOiJzdXBlcmNlbGw6Z2FtZWFwaSIsImp0aSI6ImIxZWM2MDA3LTE2MGItNGRhZC1hZjE5LTE0MTUxYzA5YjAzMSIsImlhdCI6MTYxNjMzMTU0MSwic3ViIjoiZGV2ZWxvcGVyL2FhNGVlZDUxLWMwOTgtZTU5Yi02ODUyLTMxYjUyOWZjNWQ4OSIsInNjb3BlcyI6WyJicmF3bHN0YXJzIl0sImxpbWl0cyI6W3sidGllciI6ImRldmVsb3Blci9zaWx2ZXIiLCJ0eXBlIjoidGhyb3R0bGluZyJ9LHsiY2lkcnMiOlsiMTM3LjEzMi4yMTMuNDIiXSwidHlwZSI6ImNsaWVudCJ9XX0.2RX8nxAyN8Z5-HyE9daLtD3J-BByq44Z86mWMZR3TxpPyPmcTEdvAzDszewqikV_vKEXMUd2PMeA5U8_KtpDRw"
+token = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzUxMiIsImtpZCI6IjI4YTMxOGY3LTAwMDAtYTFlYi03ZmExLTJjNzQzM2M2Y2NhNSJ9.eyJpc3MiOiJzdXBlcmNlbGwiLCJhdWQiOiJzdXBlcmNlbGw6Z2FtZWFwaSIsImp0aSI6IjlhZmNmNjc2LTA1MmMtNGRhZC1hYjExLTY0YzViNjIxNGU1MiIsImlhdCI6MTYxNjQxMTcyOSwic3ViIjoiZGV2ZWxvcGVyL2FhNGVlZDUxLWMwOTgtZTU5Yi02ODUyLTMxYjUyOWZjNWQ4OSIsInNjb3BlcyI6WyJicmF3bHN0YXJzIl0sImxpbWl0cyI6W3sidGllciI6ImRldmVsb3Blci9zaWx2ZXIiLCJ0eXBlIjoidGhyb3R0bGluZyJ9LHsiY2lkcnMiOlsiMTM3LjEzMi4yMTIuMjEiXSwidHlwZSI6ImNsaWVudCJ9XX0.A4pTawYj17we4MnK-O6VefJingkMhrFCLxky50tKPMxrbCmxjlvDXiZ1NuKq_UMBOOL7ff_NJvBnCMRJ13Q8cQ"
 client = brawlstats.Client(token, prevent_ratelimit=True)
 
 gamer_tag = "J9C0CGJU"
-
 
 
 def get_pl_games(gamer_tag: str, last_time: str) -> defaultdict[Tuple, List]:
@@ -33,9 +32,9 @@ def get_pl_games(gamer_tag: str, last_time: str) -> defaultdict[Tuple, List]:
     return pl_games
 
 
-def get_teams(game: list, friendly_file="x") -> Tuple[List[str], List[str]]:
+def get_teams(game: list, friendly_file: str) -> Tuple[List[str], List[str]]:
     def read_friendly_file(filename: str) -> defaultdict:
-        d = defaultdict(lambda _: "")
+        d = defaultdict(lambda: "")
         try:
             with open(filename) as f:
                 for line in f:
@@ -43,6 +42,7 @@ def get_teams(game: list, friendly_file="x") -> Tuple[List[str], List[str]]:
                     d[key] = val
         finally:
             return d
+
     friendly_tags = read_friendly_file(friendly_file)
     friends_lst, enemies_lst = [], []
     match = game[0]
@@ -55,7 +55,8 @@ def get_teams(game: list, friendly_file="x") -> Tuple[List[str], List[str]]:
     friends_lst.extend(friends["#" + gamer_tag])
     del friends["#" + gamer_tag]
     for ID, pair in friends.items():
-        new_pair = (pair[0] + "-" + friendly_tags[ID], pair[1])
+        print(pair)
+        new_pair = (pair[0] + friendly_tags[ID], pair[1])
         friends_lst.extend(new_pair)
     for pair in enemies.values():
         enemies_lst.extend(pair)
@@ -91,6 +92,7 @@ def write_to_gsheets(sheet_name, workbook_name, friendly_file):
     pl_games = get_pl_games(gamer_tag, last_time)
     write = create_write_list(pl_games, counter, friendly_file)
     write.reverse()
+
     def split_into_chunks(lst: List[List[str]], n: int) -> list[list[list[str]]]:
         return [lst[i:i + n] for i in range(0, len(lst), n)]
 
