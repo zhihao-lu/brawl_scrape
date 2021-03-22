@@ -6,10 +6,7 @@ from time import sleep
 from oauth2client.service_account import ServiceAccountCredentials
 from collections import defaultdict
 
-token = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzUxMiIsImtpZCI6IjI4YTMxOGY3LTAwMDAtYTFlYi03ZmExLTJjNzQzM2M2Y2NhNSJ9.eyJpc3MiOiJzdXBlcmNlbGwiLCJhdWQiOiJzdXBlcmNlbGw6Z2FtZWFwaSIsImp0aSI6IjlhZmNmNjc2LTA1MmMtNGRhZC1hYjExLTY0YzViNjIxNGU1MiIsImlhdCI6MTYxNjQxMTcyOSwic3ViIjoiZGV2ZWxvcGVyL2FhNGVlZDUxLWMwOTgtZTU5Yi02ODUyLTMxYjUyOWZjNWQ4OSIsInNjb3BlcyI6WyJicmF3bHN0YXJzIl0sImxpbWl0cyI6W3sidGllciI6ImRldmVsb3Blci9zaWx2ZXIiLCJ0eXBlIjoidGhyb3R0bGluZyJ9LHsiY2lkcnMiOlsiMTM3LjEzMi4yMTIuMjEiXSwidHlwZSI6ImNsaWVudCJ9XX0.A4pTawYj17we4MnK-O6VefJingkMhrFCLxky50tKPMxrbCmxjlvDXiZ1NuKq_UMBOOL7ff_NJvBnCMRJ13Q8cQ"
-client = brawlstats.Client(token, prevent_ratelimit=True)
 
-gamer_tag = "J9C0CGJU"
 
 
 def get_pl_games(gamer_tag: str, last_time: str) -> defaultdict[Tuple, List]:
@@ -105,3 +102,10 @@ def write_to_gsheets(sheet_name, workbook_name, friendly_file):
             sheet.insert_row(row, start_row)
             start_row += 1
         sleep(100)
+
+if __name__ == "__main__":
+    token = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzUxMiIsImtpZCI6IjI4YTMxOGY3LTAwMDAtYTFlYi03ZmExLTJjNzQzM2M2Y2NhNSJ9.eyJpc3MiOiJzdXBlcmNlbGwiLCJhdWQiOiJzdXBlcmNlbGw6Z2FtZWFwaSIsImp0aSI6IjlhZmNmNjc2LTA1MmMtNGRhZC1hYjExLTY0YzViNjIxNGU1MiIsImlhdCI6MTYxNjQxMTcyOSwic3ViIjoiZGV2ZWxvcGVyL2FhNGVlZDUxLWMwOTgtZTU5Yi02ODUyLTMxYjUyOWZjNWQ4OSIsInNjb3BlcyI6WyJicmF3bHN0YXJzIl0sImxpbWl0cyI6W3sidGllciI6ImRldmVsb3Blci9zaWx2ZXIiLCJ0eXBlIjoidGhyb3R0bGluZyJ9LHsiY2lkcnMiOlsiMTM3LjEzMi4yMTIuMjEiXSwidHlwZSI6ImNsaWVudCJ9XX0.A4pTawYj17we4MnK-O6VefJingkMhrFCLxky50tKPMxrbCmxjlvDXiZ1NuKq_UMBOOL7ff_NJvBnCMRJ13Q8cQ"
+    client = brawlstats.Client(token, prevent_ratelimit=True)
+
+    gamer_tag = "J9C0CGJU"
+    write_to_gsheets("Brawl", "Sheet3", "friendly_tags.txt")
