@@ -64,7 +64,7 @@ def get_teams(game: list, friendly_file: str) -> Tuple[List[str], List[str]]:
 
 def create_write_list(pl_games: defaultdict[Tuple, List], counter: int, friendly_file: str) -> List[List[str]]:
     write = []
-    games = pl_games.values()
+    games = list(pl_games.values())
     games.reverse()
     for game in games:
         counter += 1
@@ -92,7 +92,7 @@ def write_to_gsheets(sheet_name, workbook_name, friendly_file):
     last_time = sheet.cell(start_row - 1, 2).value
     pl_games = get_pl_games(gamer_tag, last_time)
     write = create_write_list(pl_games, counter, friendly_file)
-    write.reverse()
+
 
     def split_into_chunks(lst: List[List[str]], n: int) -> list[list[list[str]]]:
         return [lst[i:i + n] for i in range(0, len(lst), n)]
