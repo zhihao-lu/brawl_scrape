@@ -6,20 +6,12 @@ from time import sleep
 from oauth2client.service_account import ServiceAccountCredentials
 from collections import defaultdict
 
-#token = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzUxMiIsImtpZCI6IjI4YTMxOGY3LTAwMDAtYTFlYi03ZmExLTJjNzQzM2M2Y2NhNSJ9.eyJpc3MiOiJzdXBlcmNlbGwiLCJhdWQiOiJzdXBlcmNlbGw6Z2FtZWFwaSIsImp0aSI6ImIxZWM2MDA3LTE2MGItNGRhZC1hZjE5LTE0MTUxYzA5YjAzMSIsImlhdCI6MTYxNjMzMTU0MSwic3ViIjoiZGV2ZWxvcGVyL2FhNGVlZDUxLWMwOTgtZTU5Yi02ODUyLTMxYjUyOWZjNWQ4OSIsInNjb3BlcyI6WyJicmF3bHN0YXJzIl0sImxpbWl0cyI6W3sidGllciI6ImRldmVsb3Blci9zaWx2ZXIiLCJ0eXBlIjoidGhyb3R0bGluZyJ9LHsiY2lkcnMiOlsiMTM3LjEzMi4yMTMuNDIiXSwidHlwZSI6ImNsaWVudCJ9XX0.2RX8nxAyN8Z5-HyE9daLtD3J-BByq44Z86mWMZR3TxpPyPmcTEdvAzDszewqikV_vKEXMUd2PMeA5U8_KtpDRw"
-#client = brawlstats.Client(token, prevent_ratelimit=True)
+token = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzUxMiIsImtpZCI6IjI4YTMxOGY3LTAwMDAtYTFlYi03ZmExLTJjNzQzM2M2Y2NhNSJ9.eyJpc3MiOiJzdXBlcmNlbGwiLCJhdWQiOiJzdXBlcmNlbGw6Z2FtZWFwaSIsImp0aSI6ImIxZWM2MDA3LTE2MGItNGRhZC1hZjE5LTE0MTUxYzA5YjAzMSIsImlhdCI6MTYxNjMzMTU0MSwic3ViIjoiZGV2ZWxvcGVyL2FhNGVlZDUxLWMwOTgtZTU5Yi02ODUyLTMxYjUyOWZjNWQ4OSIsInNjb3BlcyI6WyJicmF3bHN0YXJzIl0sImxpbWl0cyI6W3sidGllciI6ImRldmVsb3Blci9zaWx2ZXIiLCJ0eXBlIjoidGhyb3R0bGluZyJ9LHsiY2lkcnMiOlsiMTM3LjEzMi4yMTMuNDIiXSwidHlwZSI6ImNsaWVudCJ9XX0.2RX8nxAyN8Z5-HyE9daLtD3J-BByq44Z86mWMZR3TxpPyPmcTEdvAzDszewqikV_vKEXMUd2PMeA5U8_KtpDRw"
+client = brawlstats.Client(token, prevent_ratelimit=True)
 
 gamer_tag = "J9C0CGJU"
 
-def read_friendly_file(filename: str) -> defaultdict:
-    d = defaultdict(lambda _: "")
-    try:
-        with open(filename) as f:
-            for line in f:
-                (key, val) = line.split()
-                d[key] = val
-    finally:
-        return d
+
 
 def get_pl_games(gamer_tag: str, last_time: str) -> defaultdict[Tuple, List]:
     # get all battles in battle log
@@ -41,7 +33,17 @@ def get_pl_games(gamer_tag: str, last_time: str) -> defaultdict[Tuple, List]:
     return pl_games
 
 
-def get_teams(game: list, friendly_tags: defaultdict) -> Tuple[List[str], List[str]]:
+def get_teams(game: list, friendly_file="x") -> Tuple[List[str], List[str]]:
+    def read_friendly_file(filename: str) -> defaultdict:
+        d = defaultdict(lambda _: "")
+        try:
+            with open(filename) as f:
+                for line in f:
+                    (key, val) = line.split()
+                    d[key] = val
+        finally:
+            return d
+    friendly_tags = read_friendly_file(friendly_file)
     friends_lst, enemies_lst = [], []
     match = game[0]
     for battle in match.battle.teams:
@@ -60,11 +62,11 @@ def get_teams(game: list, friendly_tags: defaultdict) -> Tuple[List[str], List[s
     return friends_lst, enemies_lst
 
 
-def create_write_list(pl_games: defaultdict[Tuple, List], counter: int) -> List[List[str]]:
+def create_write_list(pl_games: defaultdict[Tuple, List], counter: int, friendly_file: str) -> List[List[str]]:
     write = []
     for tags, game in pl_games.items():
         counter += 1
-        friends, enemies = get_teams(game)
+        friends, enemies = get_teams(game, friendly_file)
         for match in game:
             row_write = [counter, match.battle_time, match.event.mode, match.event.map]
             row_write.extend(friends)
@@ -76,7 +78,7 @@ def create_write_list(pl_games: defaultdict[Tuple, List], counter: int) -> List[
 
 
 # game_counter += 1
-def write_to_gsheets(sheet_name, workbook_name):
+def write_to_gsheets(sheet_name, workbook_name, friendly_file):
     scope = ['https://spreadsheets.google.com/feeds',
              'https://www.googleapis.com/auth/drive']
     creds = ServiceAccountCredentials.from_json_keyfile_name('client_secret.json', scope)
@@ -87,7 +89,7 @@ def write_to_gsheets(sheet_name, workbook_name):
     counter = int(counter)
     last_time = sheet.cell(start_row - 1, 2).value
     pl_games = get_pl_games(gamer_tag, last_time)
-    write = create_write_list(pl_games, counter)
+    write = create_write_list(pl_games, counter, friendly_file)
     write.reverse()
     def split_into_chunks(lst: List[List[str]], n: int) -> list[list[list[str]]]:
         return [lst[i:i + n] for i in range(0, len(lst), n)]
