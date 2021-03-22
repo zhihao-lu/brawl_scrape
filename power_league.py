@@ -55,7 +55,6 @@ def get_teams(game: list, friendly_file: str) -> Tuple[List[str], List[str]]:
     friends_lst.extend(friends["#" + gamer_tag])
     del friends["#" + gamer_tag]
     for ID, pair in friends.items():
-        print(pair)
         new_pair = (pair[0] + friendly_tags[ID], pair[1])
         friends_lst.extend(new_pair)
     for pair in enemies.values():
@@ -65,7 +64,9 @@ def get_teams(game: list, friendly_file: str) -> Tuple[List[str], List[str]]:
 
 def create_write_list(pl_games: defaultdict[Tuple, List], counter: int, friendly_file: str) -> List[List[str]]:
     write = []
-    for tags, game in pl_games.items():
+    games = pl_games.values()
+    games.reverse()
+    for game in games:
         counter += 1
         friends, enemies = get_teams(game, friendly_file)
         for match in game:
