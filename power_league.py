@@ -7,15 +7,36 @@ from oauth2client.service_account import ServiceAccountCredentials
 from collections import defaultdict
 
 
+def get_pl_games(gamer_tag, last_time):
+    """
+    Extracts power league games from all battles by grouping the games by the
+    set of all players in the game. This allows us to group all matches within
+    each power league game together.
 
+    :param gamer_tag:
+        A string of your gamer tag
 
-def get_pl_games(gamer_tag: str, last_time: str) -> defaultdict[Tuple, List]:
-    # get all battles in battle log
+    :param last_time
+        A string specifying the time of the last recorded entry that already
+        exists in the google sheets. Used to filter only games that have not
+        been recorded.
+
+    :return:
+        A defaultdict mapping each unique set of players in the game to a list
+        of matches within that game of power league.
+    """
     battles_raw = client.get_battle_logs(gamer_tag)
     battles = list(filter(lambda x: "type" in x.battle and "Ranked" in x.battle.type, battles_raw))
     pl_games: defaultdict[Tuple, List] = defaultdict(list)
 
     def extract_player_tags(battle):
+        """
+        :param battle
+            A BoxList representing a single battle
+
+        :return:
+            A tuple of all player tags in this battle
+        """
         out: List[str] = []
         for team in battle.battle.teams.to_list():
             for player in team:
@@ -72,6 +93,7 @@ def create_write_list(pl_games: defaultdict[Tuple, List], counter: int, friendly
             row_write.extend(enemies)
             row_write.append(match.battle.result)
             row_write.append(match.battle.type)
+            row_write.reverse()
             write.append(row_write)
     return write
 
@@ -90,7 +112,6 @@ def write_to_gsheets(sheet_name, workbook_name, friendly_file):
     pl_games = get_pl_games(gamer_tag, last_time)
     write = create_write_list(pl_games, counter, friendly_file)
 
-
     def split_into_chunks(lst: List[List[str]], n: int) -> list[list[list[str]]]:
         return [lst[i:i + n] for i in range(0, len(lst), n)]
 
@@ -103,8 +124,9 @@ def write_to_gsheets(sheet_name, workbook_name, friendly_file):
             start_row += 1
         sleep(100)
 
+
 if __name__ == "__main__":
-    token = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzUxMiIsImtpZCI6IjI4YTMxOGY3LTAwMDAtYTFlYi03ZmExLTJjNzQzM2M2Y2NhNSJ9.eyJpc3MiOiJzdXBlcmNlbGwiLCJhdWQiOiJzdXBlcmNlbGw6Z2FtZWFwaSIsImp0aSI6IjlhZmNmNjc2LTA1MmMtNGRhZC1hYjExLTY0YzViNjIxNGU1MiIsImlhdCI6MTYxNjQxMTcyOSwic3ViIjoiZGV2ZWxvcGVyL2FhNGVlZDUxLWMwOTgtZTU5Yi02ODUyLTMxYjUyOWZjNWQ4OSIsInNjb3BlcyI6WyJicmF3bHN0YXJzIl0sImxpbWl0cyI6W3sidGllciI6ImRldmVsb3Blci9zaWx2ZXIiLCJ0eXBlIjoidGhyb3R0bGluZyJ9LHsiY2lkcnMiOlsiMTM3LjEzMi4yMTIuMjEiXSwidHlwZSI6ImNsaWVudCJ9XX0.A4pTawYj17we4MnK-O6VefJingkMhrFCLxky50tKPMxrbCmxjlvDXiZ1NuKq_UMBOOL7ff_NJvBnCMRJ13Q8cQ"
+    token = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzUxMiIsImtpZCI6IjI4YTMxOGY3LTAwMDAtYTFlYi03ZmExLTJjNzQzM2M2Y2NhNSJ9.eyJpc3MiOiJzdXBlcmNlbGwiLCJhdWQiOiJzdXBlcmNlbGw6Z2FtZWFwaSIsImp0aSI6IjFhMjJhMmVlLTYwNDUtNDA0Zi04OTBiLTRhZmU5ZjUzY2E1ZSIsImlhdCI6MTYxNjQ5NDI1Miwic3ViIjoiZGV2ZWxvcGVyL2FhNGVlZDUxLWMwOTgtZTU5Yi02ODUyLTMxYjUyOWZjNWQ4OSIsInNjb3BlcyI6WyJicmF3bHN0YXJzIl0sImxpbWl0cyI6W3sidGllciI6ImRldmVsb3Blci9zaWx2ZXIiLCJ0eXBlIjoidGhyb3R0bGluZyJ9LHsiY2lkcnMiOlsiMTM3LjEzMi4yMTguMTQiXSwidHlwZSI6ImNsaWVudCJ9XX0.H8LFLh1X-Fa2niabCr_p28pinUR2vkiDBXUuDX2W1ARR8TkK0uRSYvg5gIZaxNS4KpsJqtmwJ99KE6FnfyEP5Q"
     client = brawlstats.Client(token, prevent_ratelimit=True)
 
     gamer_tag = "J9C0CGJU"
