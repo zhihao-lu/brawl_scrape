@@ -87,14 +87,16 @@ def create_write_list(pl_games: defaultdict[Tuple, List], counter: int, friendly
     for game in games:
         counter += 1
         friends, enemies = get_teams(game, friendly_file)
+        game_write = []
         for match in game:
             row_write = [counter, match.battle_time, match.event.mode, match.event.map]
             row_write.extend(friends)
             row_write.extend(enemies)
             row_write.append(match.battle.result)
             row_write.append(match.battle.type)
-            row_write.reverse()
-            write.append(row_write)
+            game_write.append(row_write)
+        game_write.reverse()
+        write.extend(game_write)
     return write
 
 
@@ -126,7 +128,7 @@ def write_to_gsheets(sheet_name, workbook_name, friendly_file):
 
 
 if __name__ == "__main__":
-    token = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzUxMiIsImtpZCI6IjI4YTMxOGY3LTAwMDAtYTFlYi03ZmExLTJjNzQzM2M2Y2NhNSJ9.eyJpc3MiOiJzdXBlcmNlbGwiLCJhdWQiOiJzdXBlcmNlbGw6Z2FtZWFwaSIsImp0aSI6IjFhMjJhMmVlLTYwNDUtNDA0Zi04OTBiLTRhZmU5ZjUzY2E1ZSIsImlhdCI6MTYxNjQ5NDI1Miwic3ViIjoiZGV2ZWxvcGVyL2FhNGVlZDUxLWMwOTgtZTU5Yi02ODUyLTMxYjUyOWZjNWQ4OSIsInNjb3BlcyI6WyJicmF3bHN0YXJzIl0sImxpbWl0cyI6W3sidGllciI6ImRldmVsb3Blci9zaWx2ZXIiLCJ0eXBlIjoidGhyb3R0bGluZyJ9LHsiY2lkcnMiOlsiMTM3LjEzMi4yMTguMTQiXSwidHlwZSI6ImNsaWVudCJ9XX0.H8LFLh1X-Fa2niabCr_p28pinUR2vkiDBXUuDX2W1ARR8TkK0uRSYvg5gIZaxNS4KpsJqtmwJ99KE6FnfyEP5Q"
+    token = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzUxMiIsImtpZCI6IjI4YTMxOGY3LTAwMDAtYTFlYi03ZmExLTJjNzQzM2M2Y2NhNSJ9.eyJpc3MiOiJzdXBlcmNlbGwiLCJhdWQiOiJzdXBlcmNlbGw6Z2FtZWFwaSIsImp0aSI6IjllZWQxMjg4LTNhMTYtNGZmNi04ZDQ4LWRlYmIwYzljZjA3MiIsImlhdCI6MTYxNjcyODEzNCwic3ViIjoiZGV2ZWxvcGVyL2FhNGVlZDUxLWMwOTgtZTU5Yi02ODUyLTMxYjUyOWZjNWQ4OSIsInNjb3BlcyI6WyJicmF3bHN0YXJzIl0sImxpbWl0cyI6W3sidGllciI6ImRldmVsb3Blci9zaWx2ZXIiLCJ0eXBlIjoidGhyb3R0bGluZyJ9LHsiY2lkcnMiOlsiMTM3LjEzMi4yMTEuMzkiXSwidHlwZSI6ImNsaWVudCJ9XX0.jO89FqlyOMrh6i_wng2zugzKC-onLlkKmYjXLEyp8BA5Y9ggaa2A0R339xIDCiXt2hudPvrLjwaQtMHVMKrIFQ"
     client = brawlstats.Client(token, prevent_ratelimit=True)
 
     gamer_tag = "J9C0CGJU"
